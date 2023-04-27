@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "update-types": "echo $SUPABASE_ACCESS_TOKEN | npx supabase login && npx supabase projects list && mkdir -p ./src/utils/ && npx supabase gen types typescript --debug --project-id $PROJECT_ID --schema public > ./src/utils/database.types    "
   },
   "dependencies": {
     "@supabase/auth-helpers-nextjs": "^0.6.1",
