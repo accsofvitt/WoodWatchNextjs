@@ -30,16 +30,23 @@ jobs:
         id: git_status
         run: |
           echo "::set-output name=status::$(git status -s)"
+      - name: Install GitHub CLI
+        run: |
+          sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-key C99B11DEB97541F0
+          sudo apt-add-repository https://cli.github.com/packages
+          sudo apt update
+          sudo apt install gh
       - name: Commit files
         if: ${{contains(steps.git_status.outputs.status, ' ')}}
         run: |
-          git add ./src/utils/database.types
+          git checkout -b update-types-$(date +%Y%m%d%H%M%S)
+          git add src/common/supabase/supabaseTypes.ts
           git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git config --local user.name "github-actions[bot]"
           git commit -m "Update database types" -a
-      - name: Push changes
+      - name: Push changes and create PR
         if: ${{contains(steps.git_status.outputs.status, ' ')}}
-        uses: ad-m/github-push-action@master
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          branch: ${{ github.ref }}
+        run: |
+          git push origin HEAD
+          gh auth login --with-token <<< ${{ secrets.GITHUB_TOKEN }}
+          gh pr create --title "Update database types" --body "This PR updates the database types." --base main --head $(git symbolic-ref --short HEAD) --repo ${{ github.repository }}
